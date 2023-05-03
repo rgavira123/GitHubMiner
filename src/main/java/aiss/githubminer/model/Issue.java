@@ -64,13 +64,13 @@ public class Issue {
     @JsonProperty("user")
     private User user;
     @JsonProperty("labels")
-    private List<Object> labels;
+    private List<Label> labels;
     @JsonProperty("state")
     private String state;
     @JsonProperty("locked")
     private Boolean locked;
     @JsonProperty("assignee")
-    private Object assignee;
+    private User assignee;
     @JsonProperty("assignees")
     private List<Object> assignees;
     @JsonProperty("milestone")
@@ -82,7 +82,7 @@ public class Issue {
     @JsonProperty("updated_at")
     private String updatedAt;
     @JsonProperty("closed_at")
-    private Object closedAt;
+    private String closedAt;
     @JsonProperty("author_association")
     private String authorAssociation;
     @JsonProperty("active_lock_reason")
@@ -209,12 +209,12 @@ public class Issue {
     }
 
     @JsonProperty("labels")
-    public List<Object> getLabels() {
+    public List<Label> getLabels() {
         return labels;
     }
 
     @JsonProperty("labels")
-    public void setLabels(List<Object> labels) {
+    public void setLabels(List<Label> labels) {
         this.labels = labels;
     }
 
@@ -239,12 +239,12 @@ public class Issue {
     }
 
     @JsonProperty("assignee")
-    public Object getAssignee() {
+    public User getAssignee() {
         return assignee;
     }
 
     @JsonProperty("assignee")
-    public void setAssignee(Object assignee) {
+    public void setAssignee(User assignee) {
         this.assignee = assignee;
     }
 
@@ -299,12 +299,12 @@ public class Issue {
     }
 
     @JsonProperty("closed_at")
-    public Object getClosedAt() {
+    public String getClosedAt() {
         return closedAt;
     }
 
     @JsonProperty("closed_at")
-    public void setClosedAt(Object closedAt) {
+    public void setClosedAt(String closedAt) {
         this.closedAt = closedAt;
     }
 

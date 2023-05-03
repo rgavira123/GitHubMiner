@@ -1,9 +1,6 @@
 package aiss.githubminer.service;
 
-import aiss.githubminer.model.Comment;
-import aiss.githubminer.model.Commit;
-import aiss.githubminer.model.Issue;
-import aiss.githubminer.model.Project;
+import aiss.githubminer.model.*;
 import aiss.githubminer.util.GitHubUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -97,7 +94,7 @@ public class GitHubService {
             uri += "?since=" + LocalDateTime.now().minusDays(20);
         }
 
-        ResponseEntity<Issue[]> response = getResponseEntity(uri,Issue[].class);
+        ResponseEntity<Issue[]> response = getResponseEntity(uri, Issue[].class);
         List<Issue> pageIssues = Arrays.stream(response.getBody()).toList();
         issues.addAll(pageIssues);
 
@@ -129,10 +126,10 @@ public class GitHubService {
         return getResponseEntity(uri,Comment[].class);
     }
 
-    public List<Comment> groupIssueComments(String owner, String repo, Integer maxPages) throws HttpClientErrorException{
+    public List<Comment> groupIssueComments(String owner, String repo, String number, Integer maxPages) throws HttpClientErrorException{
         List<Comment> comments = new ArrayList<>();
         Integer defaultPages;
-        String uri = "https://api.github.com/repos/"+ owner + "/" + repo + "/issues/comments";
+        String uri = "https://api.github.com/repos/" + owner + "/" + repo + "/issues/" + number + "/comments";
 
         ResponseEntity<Comment[]> response = getResponseEntity(uri, Comment[].class);
         List<Comment> pageComments = Arrays.stream(response.getBody()).toList();
@@ -161,9 +158,17 @@ public class GitHubService {
         return comments;
     }
 
+    public FullAuthor getFullAuthor(String login){
+        
+        String uri = "https://api.github.com/users/" + login;
+
+        return restTemplate.exchange(uri, HttpMethod.GET, null, FullAuthor.class).getBody();
+
+    }
+
     private <T1> ResponseEntity<T1[]> getResponseEntity(String uri, Class<T1[]> clase) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization","Bearer "  + token);
+        headers.set("Authorization","Bearer " + token);
 
         HttpEntity<T1[]> request = new HttpEntity<>(null,headers);
 
