@@ -29,7 +29,12 @@ public class GitHubService {
     public ResponseEntity<Project> getProject(String owner, String repo){
         String uri = "https://api.github.com/repos/"+ owner + "/" + repo;
 
-        return restTemplate.exchange(uri, HttpMethod.GET, null, Project.class);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization","Bearer " + token);
+
+        HttpEntity<Project> request = new HttpEntity<>(null,headers);
+
+        return restTemplate.exchange(uri, HttpMethod.GET, request, Project.class);
     }
 
     public ResponseEntity<Commit[]> getAllCommits(String owner, String repo) {
@@ -161,8 +166,12 @@ public class GitHubService {
     public FullAuthor getFullAuthor(String login){
         
         String uri = "https://api.github.com/users/" + login;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization","Bearer " + token);
 
-        return restTemplate.exchange(uri, HttpMethod.GET, null, FullAuthor.class).getBody();
+        HttpEntity<FullAuthor> request = new HttpEntity<>(null,headers);
+
+        return restTemplate.exchange(uri, HttpMethod.GET, request, FullAuthor.class).getBody();
 
     }
 

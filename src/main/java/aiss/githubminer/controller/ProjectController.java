@@ -6,6 +6,7 @@ import aiss.githubminer.model.Issue;
 import aiss.githubminer.model.Project;
 import aiss.githubminer.service.GitHubService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import java.util.List;
@@ -39,8 +40,16 @@ public class ProjectController {
         return new GitHubMinerProject(projectId,projectName,project_webUrl,commits,issues);
     }
 
+    private String[] parseTitleMessage(String s){
+        String[] parsedString = new String[]{s,""};
+        if(s.contains("\n\n")){
+            parsedString = s.split("\\n\\n");
+        }
+        return parsedString;
+    }
+
     private GitHubMinerCommit formatCommit(Commit commit){
-        return new GitHubMinerCommit(commit.getSha(), "", commit.getCommit().getMessage(),
+        return new GitHubMinerCommit(commit.getSha(), parseTitleMessage(commit.getCommit().getMessage())[0], parseTitleMessage(commit.getCommit().getMessage())[1],
                 commit.getCommit().getAuthor().getName(), commit.getCommit().getAuthor().getEmail(), commit.getCommit().getAuthor().getDate(),
                 commit.getCommit().getCommitter().getName(), commit.getCommit().getCommitter().getEmail(), commit.getCommit().getCommitter().getDate(),
                 commit.getHtmlUrl());
@@ -55,7 +64,7 @@ public class ProjectController {
         String created_at = issue.getCreatedAt();
         String updated_at = issue.getUpdatedAt();
         String closed_at = issue.getClosedAt();
-        List<String> labels = issue.getLabels().stream().map(x->x.toString()).toList();
+        List<String> labels = issue.getLabels().stream().map(x->x.getName()).toList();
 
         FullAuthor fullAuthor = gitHubService.getFullAuthor(issue.getUser().getLogin());
         GitHubMinerUser author = new GitHubMinerUser(fullAuthor.getId().toString(), fullAuthor.getLogin(), fullAuthor.getName(), fullAuthor.getAvatarUrl(),fullAuthor.getHtmlUrl());
@@ -84,6 +93,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{owner}/{repo}")
+    @ResponseStatus(HttpStatus.CREATED)
     public GitHubMinerProject SendProject(@PathVariable String owner,
                                           @PathVariable String repo,
                                           @RequestParam(required = false,name="sinceCommits") Integer since,

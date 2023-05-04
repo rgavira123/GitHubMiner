@@ -66,7 +66,7 @@ class GitHubServiceTest {
 
     @Test
     void groupIssueComments() {
-        List<Comment> place = githubService.groupIssueComments("hcoles", "pitest", 2);
+        List<Comment> place = githubService.groupIssueComments("hcoles", "pitest", "2",2);
         assertTrue(place.size() != 0, "the list of comments is empty");
         System.out.println(place);
     }
