@@ -5,6 +5,9 @@ import aiss.githubminer.model.FullAuthor;
 import aiss.githubminer.model.Issue;
 import aiss.githubminer.model.Project;
 import aiss.githubminer.service.GitHubService;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +15,11 @@ import org.springframework.web.client.RestTemplate;
 import java.util.List;
 import aiss.githubminer.model.Commit;
 import aiss.githubminer.model.Comment;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+@Tag(name = "Github Project", description = "Github project management API")
 @RestController
 @RequestMapping("/github")
 public class ProjectController {
@@ -23,9 +31,18 @@ public class ProjectController {
     RestTemplate restTemplate;
 
     // GET http://localhost:8080/github/{owner}/{repo}?since={since}&maxPages={maxPages}
+    @Operation(
+            summary = "Retrieve a project",
+            description = "Find one project by specifying its owner and repository name",
+            tags = {"get"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Success", content = { @Content(schema = @Schema(implementation = GitHubMinerProject.class), mediaType = "application/json")}),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = { @Content(schema = @Schema())})
+    })
     @GetMapping("/{owner}/{repo}")
-    public GitHubMinerProject findOneProject(@PathVariable String owner,
-                                             @PathVariable String repo,
+    public GitHubMinerProject findOneProject(@Parameter(description = "Owner of the project to be retrieved") @PathVariable String owner,
+                                             @Parameter(description = "Repository of the project to be retrieved") @PathVariable String repo,
                                              @RequestParam(required = false, name = "sinceCommmits") Integer sinceCommits,
                                              @RequestParam(required = false, name = "sinceIssues") Integer sinceIssues,
                                              @RequestParam(required = false) Integer maxPages){
@@ -91,11 +108,19 @@ public class ProjectController {
         String updated_at = comment.getUpdatedAt();
         return new GitHubMinerComment(id, body, author, created_at, updated_at);
     }
-
+    @Operation(
+            summary = "Insert a project",
+            description = "Add a new project whose data is built from the GitHub API",
+            tags = {"post"}
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Success", content = { @Content(schema = @Schema(implementation = GitHubMinerProject.class), mediaType = "application/json")}),
+            @ApiResponse(responseCode = "400", description = "Bad Request", content = { @Content(schema = @Schema())})
+    })
     @PostMapping("/{owner}/{repo}")
     @ResponseStatus(HttpStatus.CREATED)
-    public GitHubMinerProject SendProject(@PathVariable String owner,
-                                          @PathVariable String repo,
+    public GitHubMinerProject SendProject(@Parameter(description = "Owner of the project to be sent") @PathVariable String owner,
+                                          @Parameter(description = "Repository of the project to be sent") @PathVariable String repo,
                                           @RequestParam(required = false,name="sinceCommits") Integer since,
                                           @RequestParam(required = false, name = "sinceIssues") Integer updatedAfter,
                                           @RequestParam(required = false, name = "max_pages") Integer maxPages){
@@ -107,8 +132,8 @@ public class ProjectController {
         List<GitHubMinerCommit> commits = gitHubService.groupAllCommits(owner, repo, since, maxPages).stream().map(x->formatCommit(x)).toList();
         List<GitHubMinerIssue> issues = gitHubService.groupAllIssues(owner, repo, since, maxPages).stream().map(x->formatIssue(x,owner,repo,maxPages)).toList();
 
-        GitHubMinerProject proyectoFormateado = new GitHubMinerProject(projectId, projectName, project_webUrl, commits, issues);
-        GitHubMinerProject sentProject = restTemplate.postForObject("http://localhost:8080/gitminer/projects", proyectoFormateado,GitHubMinerProject.class);
+        GitHubMinerProject formattedProject = new GitHubMinerProject(projectId, projectName, project_webUrl, commits, issues);
+        GitHubMinerProject sentProject = restTemplate.postForObject("http://localhost:8080/gitminer/projects", formattedProject,GitHubMinerProject.class);
 
         return sentProject;
 
